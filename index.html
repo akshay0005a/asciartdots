@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animated Button</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    .button {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: rgb(0, 0, 0);
+    }
+
+    .bu {
+      text-decoration: none;
+      color: white;
+      background-color: rgb(255, 0, 0);
+      padding: 20px 40px;
+      border-radius: 12px;
+      font-size: 24px;
+      font-weight: bold;
+      font-family: 'Lucida Sans', 'Lucida Sans Regular', 
+                   'Lucida Grande', 'Lucida Sans Unicode', 
+                   Geneva, Verdana, sans-serif;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+     animation: pulse 2s infinite; 
+      box-shadow: 0 0 15px rgba(255,0,0,0.6);
+    }
+
+    .bu:hover {
+      background-color: rgb(241, 241, 241);
+      color: #090f14; /* ash-blue shade */
+      transform: scale(1.1); /* grows slightly on hover */
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.8);
+      cursor: pointer;
+     
+    }
+    
+    /* Glow pulse animation */
+    @keyframes pulse {
+      0% { transform: scale(1); box-shadow: 0 0 15px rgba(249, 0, 0, 0.6); }
+      50% { transform: scale(1.05); box-shadow: 0 0 30px rgba(255, 0, 0, 0.9); }
+      100% { transform: scale(1); box-shadow: 0 0 15px rgba(239, 5, 5, 0.6); }
+    }
+    @media screen and (max-width: 500px){
+      .bu {
+        font-size: 18px;
+        padding: 15px 30px;
+        width: 60%;
+      }
+        
+    }
+  </style>
+</head>
+<body>
+  <div class="button">
+    <a href="ma.html" class="bu" id="myButton">Click Here to Display Your Photo</a>
+  </div>
+
+  <script>
+    document.getElementById('myButton').addEventListener('click', function () {
+      alert('mahi ur photo is loading');
+    });
+  </script>
+</body>
+</html>
