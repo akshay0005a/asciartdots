@@ -3,71 +3,158 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Animated Button</title>
+  <title>Responsive ASCII Dots</title>
   <style>
     body {
+      background: black;
       margin: 0;
       padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
     .button {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-color: rgb(0, 0, 0);
+      margin: 15px;
     }
 
     .bu {
       text-decoration: none;
       color: white;
       background-color: rgb(255, 0, 0);
-      padding: 20px 40px;
-      border-radius: 12px;
-      font-size: 24px;
+      padding: 12px 25px;
+      border-radius: 10px;
+      font-size: 16px;
       font-weight: bold;
-      font-family: 'Lucida Sans', 'Lucida Sans Regular', 
-                   'Lucida Grande', 'Lucida Sans Unicode', 
-                   Geneva, Verdana, sans-serif;
+      cursor: pointer;
       transition: transform 0.3s ease, background-color 0.3s ease;
-     animation: pulse 2s infinite; 
-      box-shadow: 0 0 15px rgba(255,0,0,0.6);
+      animation: pulse 2s infinite;
+      box-shadow: 0 0 10px rgba(255,0,0,0.6);
     }
 
     .bu:hover {
-      background-color: rgb(241, 241, 241);
-      color: #090f14; /* ash-blue shade */
-      transform: scale(1.1); /* grows slightly on hover */
-      box-shadow: 0 0 25px rgba(255, 255, 255, 0.8);
-      cursor: pointer;
-     
+      background-color: white;
+      color: black;
+      transform: scale(1.1);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
     }
-    
-    /* Glow pulse animation */
+
     @keyframes pulse {
-      0% { transform: scale(1); box-shadow: 0 0 15px rgba(249, 0, 0, 0.6); }
-      50% { transform: scale(1.05); box-shadow: 0 0 30px rgba(255, 0, 0, 0.9); }
-      100% { transform: scale(1); box-shadow: 0 0 15px rgba(239, 5, 5, 0.6); }
+      0% { transform: scale(1); box-shadow: 0 0 10px rgba(249, 0, 0, 0.6); }
+      50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(255, 0, 0, 0.9); }
+      100% { transform: scale(1); box-shadow: 0 0 10px rgba(239, 5, 5, 0.6); }
     }
-    @media screen and (max-width: 500px){
-      .bu {
-        font-size: 18px;
-        padding: 15px 30px;
-        width: 60%;
-      }
-        
+
+    #asciiCanvas {
+      margin: 10px;
+      width: 100%;     /* responsive width */
+      height: auto;    /* maintain aspect ratio */
+      max-width: 95vw; /* fit mobile screens */
+      image-rendering: pixelated;
+      display: block;
     }
   </style>
 </head>
 <body>
   <div class="button">
-    <a href="ma.html" class="bu" id="myButton">Click Here to Display Your Photo</a>
+    <label class="bu">
+      Upload Your Photo
+      <input type="file" id="upload" accept="image/*" style="display:none">
+    </label>
   </div>
 
+  <!-- ASCII Canvas -->
+  <canvas id="asciiCanvas"></canvas>
+
   <script>
-    document.getElementById('myButton').addEventListener('click', function () {
-      alert('mahi ur photo is loading');
+    const uploadInput = document.getElementById("upload");
+    const asciiCanvas = document.getElementById("asciiCanvas");
+    const ctx = asciiCanvas.getContext("2d");
+
+    let pixelData = null;
+    let imgWidth = 0, imgHeight = 0;
+    let linesToShow = 0;
+    let dotSize = 6; // base dot size, adjusted later for responsiveness
+
+    uploadInput.addEventListener("change", function (event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const img = new Image();
+          img.onload = function () {
+            // Responsive scaling based on screen width
+            const screenWidth = window.innerWidth;
+            const targetWidth = Math.min(120, Math.floor(screenWidth / 4)); 
+            const scale = targetWidth / img.width;
+            const height = Math.floor(img.height * scale);
+
+            imgWidth = targetWidth;
+            imgHeight = height;
+
+            dotSize = Math.max(4, Math.floor(screenWidth / 100)); // scale dots for mobile
+
+            asciiCanvas.width = imgWidth * dotSize;
+            asciiCanvas.height = imgHeight * dotSize;
+
+            // hidden temp canvas
+            const tempCanvas = document.createElement("canvas");
+            const tctx = tempCanvas.getContext("2d");
+            tempCanvas.width = imgWidth;
+            tempCanvas.height = imgHeight;
+            tctx.drawImage(img, 0, 0, imgWidth, imgHeight);
+
+            const imageData = tctx.getImageData(0, 0, imgWidth, imgHeight);
+            pixelData = imageData.data;
+
+            linesToShow = 0;
+            requestAnimationFrame(drawDots);
+            revealLines();
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function revealLines() {
+      if (linesToShow < imgHeight) {
+        linesToShow++;
+        setTimeout(revealLines, 70); // adjust line reveal speed
+      }
+    }
+
+    function drawDots() {
+      if (!pixelData) {
+        requestAnimationFrame(drawDots);
+        return;
+      }
+
+      ctx.clearRect(0, 0, asciiCanvas.width, asciiCanvas.height);
+      ctx.font = `${dotSize}px monospace`;
+      ctx.textBaseline = "top";
+
+      for (let y = 0; y < linesToShow; y++) {
+        for (let x = 0; x < imgWidth; x++) {
+          const offset = (y * imgWidth + x) * 4;
+          const r = pixelData[offset];
+          const g = pixelData[offset + 1];
+          const b = pixelData[offset + 2];
+
+          ctx.fillStyle = `rgb(${r},${g},${b})`;
+          ctx.fillText("●", x * dotSize, y * dotSize);
+        }
+      }
+
+      requestAnimationFrame(drawDots);
+    }
+
+    // Re-render on screen resize
+    window.addEventListener("resize", () => {
+      if (pixelData) uploadInput.dispatchEvent(new Event("change"));
     });
   </script>
 </body>
 </html>
+
