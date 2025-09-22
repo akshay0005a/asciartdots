@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Responsive ASCII Dots</title>
+  <title>Responsive Retina ASCII Dots</title>
   <style>
     body {
       background: black;
@@ -48,9 +48,8 @@
 
     #asciiCanvas {
       margin: 10px;
-      width: 100%;     /* responsive width */
-      height: auto;    /* maintain aspect ratio */
-      max-width: 95vw; /* fit mobile screens */
+      width: 95vw;   
+      height: auto;  
       image-rendering: pixelated;
       display: block;
     }
@@ -64,7 +63,6 @@
     </label>
   </div>
 
-  <!-- ASCII Canvas -->
   <canvas id="asciiCanvas"></canvas>
 
   <script>
@@ -75,86 +73,78 @@
     let pixelData = null;
     let imgWidth = 0, imgHeight = 0;
     let linesToShow = 0;
-    let dotSize = 6; // base dot size, adjusted later for responsiveness
+    let dotSize = 6;
+    const dpr = window.devicePixelRatio || 1;
 
-    uploadInput.addEventListener("change", function (event) {
+    uploadInput.addEventListener("change", function(event){
       const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          const img = new Image();
-          img.onload = function () {
-            // Responsive scaling based on screen width
-            const screenWidth = window.innerWidth;
-            const targetWidth = Math.min(120, Math.floor(screenWidth / 4)); 
-            const scale = targetWidth / img.width;
-            const height = Math.floor(img.height * scale);
+      if(!file) return;
 
-            imgWidth = targetWidth;
-            imgHeight = height;
+      const reader = new FileReader();
+      reader.onload = function(e){
+        const img = new Image();
+        img.onload = function(){
+          // target width in dots for clarity
+          const maxDots = 200;
+          const scale = Math.min(maxDots / img.width, 1);
+          imgWidth = Math.floor(img.width * scale);
+          imgHeight = Math.floor(img.height * scale);
 
-            dotSize = Math.max(4, Math.floor(screenWidth / 100)); // scale dots for mobile
+          // dot size scales for device width & dpr
+          dotSize = Math.max(2, Math.floor((window.innerWidth / imgWidth) / 2));
 
-            asciiCanvas.width = imgWidth * dotSize;
-            asciiCanvas.height = imgHeight * dotSize;
+          // internal canvas resolution * devicePixelRatio
+          asciiCanvas.width = imgWidth * dotSize * dpr;
+          asciiCanvas.height = imgHeight * dotSize * dpr;
+          asciiCanvas.style.width = `${imgWidth * dotSize}px`;
+          asciiCanvas.style.height = `${imgHeight * dotSize}px`;
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // scale context for high-DPI
 
-            // hidden temp canvas
-            const tempCanvas = document.createElement("canvas");
-            const tctx = tempCanvas.getContext("2d");
-            tempCanvas.width = imgWidth;
-            tempCanvas.height = imgHeight;
-            tctx.drawImage(img, 0, 0, imgWidth, imgHeight);
+          const tempCanvas = document.createElement("canvas");
+          const tctx = tempCanvas.getContext("2d");
+          tempCanvas.width = imgWidth;
+          tempCanvas.height = imgHeight;
+          tctx.drawImage(img, 0, 0, imgWidth, imgHeight);
 
-            const imageData = tctx.getImageData(0, 0, imgWidth, imgHeight);
-            pixelData = imageData.data;
-
-            linesToShow = 0;
-            requestAnimationFrame(drawDots);
-            revealLines();
-          };
-          img.src = e.target.result;
+          pixelData = tctx.getImageData(0, 0, imgWidth, imgHeight).data;
+          linesToShow = 0;
+          revealLines();
         };
-        reader.readAsDataURL(file);
-      }
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
     });
 
-    function revealLines() {
-      if (linesToShow < imgHeight) {
+    function revealLines(){
+      if(linesToShow < imgHeight){
         linesToShow++;
-        setTimeout(revealLines, 70); // adjust line reveal speed
+        drawDots();
+        setTimeout(revealLines, 50);
       }
     }
 
-    function drawDots() {
-      if (!pixelData) {
-        requestAnimationFrame(drawDots);
-        return;
-      }
+    function drawDots(){
+      if(!pixelData) return;
 
-      ctx.clearRect(0, 0, asciiCanvas.width, asciiCanvas.height);
+      ctx.clearRect(0,0,asciiCanvas.width, asciiCanvas.height);
       ctx.font = `${dotSize}px monospace`;
       ctx.textBaseline = "top";
 
-      for (let y = 0; y < linesToShow; y++) {
-        for (let x = 0; x < imgWidth; x++) {
+      for(let y=0; y<linesToShow; y++){
+        for(let x=0; x<imgWidth; x++){
           const offset = (y * imgWidth + x) * 4;
           const r = pixelData[offset];
-          const g = pixelData[offset + 1];
-          const b = pixelData[offset + 2];
-
+          const g = pixelData[offset+1];
+          const b = pixelData[offset+2];
           ctx.fillStyle = `rgb(${r},${g},${b})`;
-          ctx.fillText("●", x * dotSize, y * dotSize);
+          ctx.fillText("●", x*dotSize, y*dotSize);
         }
       }
-
-      requestAnimationFrame(drawDots);
     }
 
-    // Re-render on screen resize
     window.addEventListener("resize", () => {
-      if (pixelData) uploadInput.dispatchEvent(new Event("change"));
+      if(pixelData) drawDots();
     });
   </script>
 </body>
 </html>
-
