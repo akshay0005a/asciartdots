@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Responsive Retina ASCII Dots</title>
   <style>
-    body {
+     body {
       background: black;
       margin: 0;
       padding: 0;
@@ -17,6 +17,7 @@
 
     .button {
       margin: 15px;
+      animation: slideDown 1s ease-out forwards;
     }
 
     .bu {
@@ -52,6 +53,74 @@
       height: auto;  
       image-rendering: pixelated;
       display: block;
+      animation: fadeIn 1s ease-out forwards;
+    }
+
+    .instruction {
+      margin: 15px;
+      opacity: 0;
+      animation: fadeInText 1s ease-out forwards;
+      animation-delay: 0.5s;
+    }
+
+    .instruction span {
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      color: white;
+      transition: transform 0.5s ease, color 0.5s ease;
+    }
+    .instruction:hover {
+      color: lightgray;
+    }
+
+    .pics {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 50px;
+      width: auto;
+      flex-direction: row;
+      margin: 30px 0px 10px 0px;
+      opacity: 0;
+      animation: fadeIn 1s ease-out forwards;
+      animation-delay: 1s;
+    }
+
+    .pics img {
+      height: 200px;
+      width: auto;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(255,255,255,0.5);
+      object-fit: cover;
+      transition: transform 0.5s ease, box-shadow 0.5s ease;
+      animation: float 3s ease-in-out infinite alternate;
+    }
+
+    .pics img:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px rgba(255,255,255,0.8);
+    }
+
+    /* Animations */
+    @keyframes slideDown {
+      0% { transform: translateY(-50px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes fadeInText {
+      0% { opacity: 0; transform: translateY(20px);}
+      100% { opacity: 1; transform: translateY(0);}
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-10px); }
     }
   </style>
 </head>
@@ -61,6 +130,18 @@
       Upload Your Photo
       <input type="file" id="upload" accept="image/*" style="display:none">
     </label>
+  </div>
+  <div class="instruction">
+    <span style="color:white; font-family: Arial, sans-serif; font-size: 14px;">
+      (For best results, use a clear photo with good lighting like below pics)
+      
+
+    </span>
+
+  </div>
+  <div class="pics">
+    <img src="men.avif" alt="Sample" >
+    <img src="girl.avif" alt="Sample" >
   </div>
 
   <canvas id="asciiCanvas"></canvas>
@@ -147,4 +228,4 @@
     });
   </script>
 </body>
-</html>
+</html>  add the aniamtions to the two photos and text 
